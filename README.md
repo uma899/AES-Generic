@@ -1,6 +1,10 @@
 # Advanced Encryption Standard - AES
+Documentation - from [NIST](https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.197-upd1.pdf)
+
 The basic processing unit in the AES algorithms is the byte — a sequence of eight bits.
+
 A word is a sequence of four bytes.
+
 The general function for executing AES-128, AES-192, or AES-256 is denoted by CIPHER().
 
 ## **The State**
