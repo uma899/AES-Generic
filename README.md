@@ -1,10 +1,8 @@
 # Advanced Encryption Standard - AES
 Documentation - from [NIST](https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.197-upd1.pdf)
 
-The basic processing unit in the AES algorithms is the byte — a sequence of eight bits.
-
-A word is a sequence of four bytes.
-
+The basic processing unit in the AES algorithms is the byte — a sequence of eight bits. \
+A word is a sequence of four bytes. \
 The general function for executing AES-128, AES-192, or AES-256 is denoted by CIPHER().
 
 ## **The State**
@@ -19,10 +17,17 @@ of the state called a round. Each round requires an additional input called the 
 key is a block that is usually represented as a sequence of four words (i.e., 16 bytes). 
 
 ## **KeyExpansion**
-An expansion routine, denoted by *KEYEXPANSION()*, takes the block cipher key as input and
+*   An expansion routine, denoted by *KEYEXPANSION()*, takes the block cipher key as input and
 generates the round keys as output. In particular, the input to KEYEXPANSION() is represented as
 an array of words, denoted by key, and the output is an expanded array of words, denoted by **w**,
 called the key schedule. 
+*   KEYEXPANSION() invokes 10 fxed words denoted by Rcon[ j] for 1 ≤ j ≤ 10. These 10 words
+are called the round constants
+
+
+
+
+
 
 The block ciphers AES-128, AES-192, and AES-256 differ in three respects: 
 1) the length of the key (Nk - Number of words)
@@ -45,8 +50,10 @@ The block ciphers AES-128, AES-192, and AES-256 differ in three respects:
 6. state ← ADDROUNDKEY(state,w[4 ∗Nr..4 ∗Nr +3])
 
 
-*Note:* ADDROUNDKEY() is a transformation of the state in which a round key is combined with the
-state by applying the bitwise XOR operation
+*Note:* 
+i. ADDROUNDKEY() is a transformation of the state in which a round key is combined with the
+state by applying the bitwise XOR operation \
+ii. Only aes_core.v is sequential circuit out of all modules written.
 
 
 
