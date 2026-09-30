@@ -1,4 +1,4 @@
-// key, plaintext and in_last are LATCHED internally - change it. May latch values in mode wrapper and drive this core. And output is also held in reg.
+// key, plaintext are LATCHED internally - change it. May latch values in mode wrapper and drive this core. And output is also held in reg.
 
 module aes_core #(
     parameter KEY_BITS = 256   // 128, 192, or 256
@@ -11,13 +11,13 @@ module aes_core #(
     output wire                in_ready,
     input  wire [KEY_BITS-1:0] key,
     input  wire [127:0]        plaintext,
-    input  wire                in_last,    // TLAST-equivalent, passed through
+ //   input  wire                in_last,    // put this and out_last in outside wrapper that too if this is used for many blocks of data
 
     // ---- output handshake ----
     output wire                out_valid,
     input  wire                out_ready,
-    output reg  [127:0]        ciphertext,
-    output reg                 out_last
+    output reg  [127:0]        ciphertext
+  //  output reg                 out_last
 );
 
     // ---------------- Derived parameters ----------------
@@ -43,7 +43,7 @@ module aes_core #(
     reg [2:0]           state;
     reg [KEY_BITS-1:0]  key_reg;
     reg [127:0]         plaintext_reg;
-    reg                 last_reg;    // in_last, latched alongside plaintext
+//    reg                 last_reg;    // in_last, latched alongside plaintext
     reg [127:0]         data_reg;
     reg [4:0]           round_cnt;   // 1..NR
 
@@ -76,11 +76,11 @@ module aes_core #(
             state         <= S_IDLE;
             key_reg       <= {KEY_BITS{1'b0}};
             plaintext_reg <= 128'h0;
-            last_reg      <= 1'b0;
+//            last_reg      <= 1'b0;
             data_reg      <= 128'h0;
             round_cnt     <= 5'd0;
             ciphertext    <= 128'h0;
-            out_last      <= 1'b0;
+//            out_last      <= 1'b0;
         end else begin
             case (state)
                 
@@ -88,7 +88,7 @@ module aes_core #(
                     if (in_valid) begin   // in_ready is 1 whenever state==S_IDLE
                         key_reg       <= key;
                         plaintext_reg <= plaintext;
-                        last_reg      <= in_last;
+//                        last_reg      <= in_last;
                         state         <= S_LOAD;
                     end
                 end
@@ -115,7 +115,7 @@ module aes_core #(
                 S_FINAL: begin
                     data_reg   <= ark_out_final;
                     ciphertext <= ark_out_final;
-                    out_last   <= last_reg;   // carry the flag to the matching output
+//                    out_last   <= last_reg;   // carry the flag to the matching output
                     state      <= S_OUT;
                 end
 
