@@ -4,9 +4,12 @@
 //            round_keys_flat[127:0]             = round_key[NR]
 
 /*
-If you call the same function three times in your code, the synthesis tool will build three separate, physical blocks of 
+
+Note: If you call the same function three times in your code, the synthesis tool will build three separate, physical blocks of 
 combinational logic on your FPGA/ASIC. It does not "share" the logic gates.
 */
+
+
 module key_expansion #(
     parameter NK = 8,     // key length in 32-bit words: 4, 6, or 8
     parameter NR = 14     // number of rounds: 10, 12, or 14
@@ -19,8 +22,10 @@ module key_expansion #(
     localparam integer RK_WIDTH    = 128 * (NR + 1);
 
     // ---- Rcon constants (word form: byte,00,00,00), idx = 1..10 ----
-    // idx=10 is only reached by AES-128 (NK=4, Nr=10 -> words up to i=40,
-    // i/NK=10). AES-192 needs up to idx=8, AES-256 up to idx=7.
+    // idx=10 is only reached by AES-128 (NK=4, Nr=10 -> words up to i=40, i/NK=10). AES-192 needs up to idx=8, AES-256 up to idx=7.
+
+    // rcon - fixed round constants
+    
     function [31:0] rcon_word;
         input integer idx;
         reg [7:0] rc;
