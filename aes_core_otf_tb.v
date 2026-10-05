@@ -1,34 +1,20 @@
-// ============================================================
-// aes_core_otf_tb.v -- Testbench for aes_core_otf, parameterized
-// over KEY_BITS (128/192/256). Uses the official FIPS-197
-// Appendix C known-answer test vectors. Same structure as
-// aes_core_tb.v (including the out_ready stall check) so the two
-// cores' behavior can be compared directly.
-//
-//   iverilog -o sim sbox.v sub_bytes.v shift_rows.v mix_columns.v \
-//     add_round_key.v key_expansion_otf.v aes_core_otf.v aes_core_otf_tb.v
-//
-// No compiler flags needed -- edit KEY_BITS below directly and
-// recompile. (A `define-based override used to live here; it was
-// removed because the compile-time-macro syntax for setting it
-// differs across tools -- e.g. `-DTB_KEY_BITS=128` for Icarus vs.
-// `+define+TB_KEY_BITS=128` for ModelSim/Questa's vlog -- and an
-// unset/mis-set macro silently falls back to its default with no
-// warning, which is easy to miss. A plain localparam you edit by
-// hand avoids that failure mode entirely.)
-// ============================================================
 `timescale 1ns/1ps
 
 module aes_core_otf_tb;
 
-    localparam integer KEY_BITS = 256;   // <<< EDIT THIS: 128, 192, or 256
+    localparam integer KEY_BITS = 192;   // <<< EDIT THIS: 128, 192, or 256
+
+    localparam [1:0] KEY_MODE = (KEY_BITS == 128) ? 2'b00 :
+                                  (KEY_BITS == 192) ? 2'b01 :
+                                                       2'b10;
 
     reg                  clk;
     reg                  rst_n;
 
     reg                  in_valid;
     wire                 in_ready;
-    reg  [KEY_BITS-1:0]  key;
+    //reg  [1:0]           key_mode;
+    reg  [255:0]  key;
     reg  [127:0]         plaintext;
 
     wire                 out_valid;
@@ -41,8 +27,8 @@ module aes_core_otf_tb;
     localparam [255:0] KEY_192_FULL = 256'hfffffffffffffffffffffffff80000000000000000000000;
     localparam [255:0] KEY_256_FULL = 256'hfffffffffffffffffffffffff800000000000000000000000000000000000000;
 
-    localparam [255:0] KEY_SEL = (KEY_BITS == 128) ? KEY_128_FULL :
-                                  (KEY_BITS == 192) ? KEY_192_FULL :
+    localparam [255:0] KEY_SEL = (KEY_BITS == 128) ? {KEY_128_FULL, 128'b0} :
+                                  (KEY_BITS == 192) ? {KEY_192_FULL, 64'b0} :
                                                        KEY_256_FULL;
 
     localparam [127:0] EXPECTED_CIPHERTEXT =
@@ -50,13 +36,12 @@ module aes_core_otf_tb;
         (KEY_BITS == 192) ? 128'h03194b8e5dda5530d0c678c0b48f5d92 :
                              128'h40b264e921e9e4a82694589ef3798262;
 
-    aes_core_otf #(
-        .KEY_BITS (KEY_BITS)
-    ) dut (
+    aes_core_otf dut (
         .clk        (clk),
         .rst_n      (rst_n),
         .in_valid   (in_valid),
         .in_ready   (in_ready),
+        .key_mode   (KEY_MODE),
         .key        (key),
         .plaintext  (plaintext),
         .out_valid  (out_valid),
@@ -100,7 +85,7 @@ module aes_core_otf_tb;
         begin
             @(posedge clk); #1;
             in_valid  = 1'b1;
-            key       = KEY_SEL[KEY_BITS-1:0];
+            key       = KEY_SEL;
             plaintext = pt;
 
             wait (in_valid && in_ready);
